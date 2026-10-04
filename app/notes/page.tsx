@@ -70,6 +70,8 @@ export default function NotesDashboard() {
   }, []);
 
   useEffect(() => {
+    // Initial data fetch on auth — the canonical fetch-on-mount pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (status === 'authenticated') void load();
   }, [status, load]);
 
