@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "yoshik notes",
+  title: "notes",
   description: "Premium infinite-canvas notes. Draw, write, and think.",
   manifest: "/notes/manifest.json",
   appleWebApp: {

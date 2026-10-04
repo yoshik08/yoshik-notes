@@ -54,9 +54,12 @@ function AuthGate({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black px-4">
         <div className="w-full max-w-sm rounded-2xl border border-neutral-800 bg-neutral-950 p-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-white">yoshik notes</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">notes</h1>
           <p className="mt-2 text-sm text-neutral-400">
             Sign in with Google to access your notes.
+          </p>
+          <p className="mt-1 text-xs text-neutral-500">
+            ✏️ Made for Apple Pencil
           </p>
           <button
             onClick={() => signIn('google', { callbackUrl: '/notes' })}

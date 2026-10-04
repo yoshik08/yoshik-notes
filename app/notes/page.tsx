@@ -18,7 +18,7 @@ function SignInPrompt() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm rounded-xl border border-[#1a1a1a] bg-black p-8 text-center">
-        <h1 className="text-xl font-semibold text-white">yoshik notes</h1>
+        <h1 className="text-xl font-semibold text-white">notes</h1>
         <p className="mt-2 text-sm text-neutral-400">Sign in to access your notes.</p>
         <button
           type="button"
