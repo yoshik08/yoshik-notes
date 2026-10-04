@@ -12,6 +12,7 @@ import {
   safeFilename,
 } from '@/lib/export/exporters';
 import { validateImport } from '@/lib/export/importer';
+import { apiUrl } from '@/components/dashboard/api';
 
 interface ExportMenuProps {
   noteId: string;
@@ -109,7 +110,7 @@ export function ExportMenu({ title, elements }: ExportMenuProps) {
       const created = (await createRes.json()) as { id?: string };
       if (!created.id) throw new Error('Failed to create note');
 
-      const patchRes = await fetch(`/api/notes/${created.id}`, {
+      const patchRes = await fetch(apiUrl(`/api/notes/${created.id}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,7 +123,7 @@ export function ExportMenu({ title, elements }: ExportMenuProps) {
       if (!patchRes.ok) throw new Error('Failed to save imported content');
 
       ok(`Imported ${res.note.elements.length} elements`);
-      router.push(`/notes/${created.id}`);
+      router.push(`/${created.id}`);
     } catch (e) {
       err(e instanceof Error ? e.message : 'Import failed');
     } finally {

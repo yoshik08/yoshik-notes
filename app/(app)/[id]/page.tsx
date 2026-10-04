@@ -8,6 +8,7 @@ import { savePending, clearPending, getPending } from '@/lib/sync/local-store';
 import type { CanvasElement, NoteDoc } from '@/lib/db/models';
 import { cn } from '@/lib/cn';
 import { ExportMenu } from '@/components/export-menu';
+import { apiUrl } from '@/components/dashboard/api';
 
 type SaveState = 'saved' | 'saving' | 'offline' | 'error';
 
@@ -55,8 +56,8 @@ export default function NoteEditorPage() {
       try {
         // Check for pending offline changes first
         const pending = await getPending(noteId).catch(() => null);
-        const res = await fetch(`/api/notes/${noteId}`);
-        if (res.status === 401) { router.push('/notes'); return; }
+        const res = await fetch(apiUrl(`/api/notes/${noteId}`));
+        if (res.status === 401) { router.push('/'); return; }
         if (!res.ok) throw new Error('Failed to load note');
         const data = await res.json();
         setNote(data);
@@ -98,7 +99,7 @@ export default function NoteEditorPage() {
     if (!note) return;
     const els = elementsRef.current;
     try {
-      const res = await fetch(`/api/notes/${noteId}`, {
+      const res = await fetch(apiUrl(`/api/notes/${noteId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -185,7 +186,7 @@ export default function NoteEditorPage() {
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-4">
         <div className="flex min-w-0 items-center gap-3">
-          <button onClick={() => router.push('/notes')} className="text-white/60 hover:text-white" title="Back to notes">
+          <button onClick={() => router.push('/')} className="text-white/60 hover:text-white" title="Back to notes">
             ←
           </button>
           <input

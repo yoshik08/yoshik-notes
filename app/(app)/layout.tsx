@@ -62,7 +62,7 @@ function AuthGate({ children }: { children: ReactNode }) {
             ✏️ Made for Apple Pencil
           </p>
           <button
-            onClick={() => signIn('google', { callbackUrl: '/notes' })}
+            onClick={() => signIn('google', { callbackUrl: '/' })}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200"
           >
             <GoogleIcon />

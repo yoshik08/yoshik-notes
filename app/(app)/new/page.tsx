@@ -24,7 +24,7 @@ export default function NewNotePage() {
       .catch((e: unknown) => {
         if (!alive) return;
         if (e instanceof ApiError && e.status === 401) {
-          signIn('google', { callbackUrl: '/notes/new' });
+          signIn('google', { callbackUrl: '/new' });
           return;
         }
         setError(e instanceof Error ? e.message : 'Failed to create note');
@@ -41,7 +41,7 @@ export default function NewNotePage() {
           <p className="text-sm text-red-400">{error}</p>
           <div className="mt-6 flex gap-3">
             <Link
-              href="/notes"
+              href="/"
               className="flex-1 rounded-lg border border-[#1a1a1a] px-4 py-2.5 text-sm font-medium text-white hover:border-[#2e2e2e]"
             >
               Back to notes
