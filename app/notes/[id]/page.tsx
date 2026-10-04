@@ -7,6 +7,7 @@ import { useHistory, addElementsCmd, deleteElementsCmd } from '@/lib/canvas/hist
 import { savePending, clearPending, getPending } from '@/lib/sync/local-store';
 import type { CanvasElement, NoteDoc } from '@/lib/db/models';
 import { cn } from '@/lib/cn';
+import { ExportMenu } from '@/components/export-menu';
 
 type SaveState = 'saved' | 'saving' | 'offline' | 'error';
 
@@ -209,6 +210,7 @@ export default function NoteEditorPage() {
           </span>
           <button onClick={undo} disabled={!canUndo} className="rounded p-1.5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30" title="Undo (⌘Z)">↩</button>
           <button onClick={redo} disabled={!canRedo} className="rounded p-1.5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30" title="Redo (⇧⌘Z)">↪</button>
+          <ExportMenu noteId={noteId} title={title} elements={elements} />
         </div>
       </header>
 
