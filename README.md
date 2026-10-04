@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# notes
 
-## Getting Started
+Premium infinite-canvas note-taking and drawing app. Made for Apple Pencil.
 
-First, run the development server:
+**Live:** https://www.yoshik.xyz/notes
+
+## What it is
+
+A browser-based alternative to Excalidraw/Notability for lightweight handwritten notes. Infinite canvas, real vector data (never screenshots), Apple Pencil support with finger-pan navigation.
+
+## Stack
+
+- **Frontend:** Next.js (App Router) + TypeScript + Tailwind + HTML Canvas
+- **Backend:** Next.js API routes
+- **Database:** MongoDB Atlas
+- **Auth:** NextAuth v4 + Google OAuth (httpOnly cookies)
+- **Deploy:** Vercel (`yoshik-notes`), proxied via `yoshik-proxy` at `/notes`
+
+## Apple Pencil behavior
+
+- `pointerType === "pen"` detection triggers **Pencil Mode**
+- Pen draws, one finger pans, two fingers pan + zoom
+- Mouse works normally
+- First detection shows a one-time toast: "Apple Pencil detected — pencil draws · fingers pan"
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Var | Purpose |
+|-----|---------|
+| `MONGODB_URI` | MongoDB Atlas connection string |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `NEXTAUTH_SECRET` | Session encryption |
+| `NEXTAUTH_URL` | `https://www.yoshik.xyz/notes/api/auth` in prod |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Key commands
 
-## Learn More
+```bash
+npm run dev      # dev server
+npm run build    # production build
+npx tsc --noEmit # type check
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Canvas:** World-coordinate system, high-DPI rendering, `requestAnimationFrame` loop. Transient pointer state kept out of React state for performance.
+- **Data:** Notes store structured `elements[]` (stroke, line, arrow, rectangle, ellipse, text, image). `revision` increments on every write for conflict detection.
+- **Autosave:** 800ms debounce after edits. Offline changes persist to IndexedDB and sync on reconnect.
+- **Ownership:** Derived from session, never from client input. Every API route enforces `ownerId`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API routes
 
-## Deploy on Vercel
+- `GET /api/me` — current user
+- `GET /api/health` — health check
+- `GET /api/notes` — list notes
+- `POST /api/notes` — create note
+- `GET /api/notes/:id` — get note
+- `PATCH /api/notes/:id` — update (with `baseRevision` conflict detection)
+- `DELETE /api/notes/:id` — delete
+- `POST /api/notes/:id/duplicate` — duplicate
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Known limitations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Apple Pencil detection uses `pointerType === "pen"` — browsers don't guarantee device identity
+- iPad hardware verification pending (no device available for testing)
+- Text wrapping in SVG export is per-line, not auto-wrap
+- Images limited to 2MB, stored as data URLs (large libraries should use object storage)
