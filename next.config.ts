@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Served at yoshik.xyz/notes via a rewrite on the proxy — all routes
-  // and assets live under the subpath.
-  basePath: '/notes',
+  // Served at yoshik.xyz/notes via the proxy, which strips the /notes prefix.
+  // No basePath — all internal paths use explicit /notes prefix.
 };
 
 export default nextConfig;

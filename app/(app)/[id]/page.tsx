@@ -44,11 +44,14 @@ export default function NoteEditorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [canvasBackground, setCanvasBackground] = useState<'#ffffff' | '#000000'>('#ffffff');
 
   const revisionRef = useRef(1);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
   const elementsRef = useRef(elements);
   elementsRef.current = elements;
+  const canvasBackgroundRef = useRef(canvasBackground);
+  canvasBackgroundRef.current = canvasBackground;
 
   // Load note
   useEffect(() => {
@@ -57,11 +60,14 @@ export default function NoteEditorPage() {
         // Check for pending offline changes first
         const pending = await getPending(noteId).catch(() => null);
         const res = await fetch(apiUrl(`/api/notes/${noteId}`));
-        if (res.status === 401) { router.push('/'); return; }
+        if (res.status === 401) { router.push('/notes'); return; }
         if (!res.ok) throw new Error('Failed to load note');
         const data = await res.json();
         setNote(data);
         setTitle(data.title);
+        if (data.canvasSettings?.background === '#000000' || data.canvasSettings?.background === '#ffffff') {
+          setCanvasBackground(data.canvasSettings.background);
+        }
         revisionRef.current = data.revision;
         if (pending && pending.updatedAt > new Date(data.updatedAt).getTime()) {
           // Local pending is newer — offer to keep it
@@ -95,6 +101,17 @@ export default function NoteEditorPage() {
     saveTimer.current = setTimeout(() => save(), 800);
   }, []);
 
+  const toggleDarkMode = useCallback(() => {
+    setCanvasBackground((prev) => {
+      const next = prev === '#ffffff' ? '#000000' : '#ffffff';
+      // Auto-switch pen color for visibility
+      if (next === '#000000' && penColor === '#000000') setPenColor('#ffffff');
+      if (next === '#ffffff' && penColor === '#ffffff') setPenColor('#000000');
+      return next;
+    });
+    markDirty();
+  }, [penColor, markDirty]);
+
   const save = useCallback(async () => {
     if (!note) return;
     const els = elementsRef.current;
@@ -105,6 +122,7 @@ export default function NoteEditorPage() {
         body: JSON.stringify({
           elements: els,
           title,
+          canvasSettings: { background: canvasBackgroundRef.current },
           baseRevision: revisionRef.current,
         }),
       });
@@ -186,7 +204,7 @@ export default function NoteEditorPage() {
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-4">
         <div className="flex min-w-0 items-center gap-3">
-          <button onClick={() => router.push('/')} className="text-white/60 hover:text-white" title="Back to notes">
+          <button onClick={() => router.push('/notes')} className="text-white/60 hover:text-white" title="Back to notes">
             ←
           </button>
           <input
@@ -211,6 +229,9 @@ export default function NoteEditorPage() {
           </span>
           <button onClick={undo} disabled={!canUndo} className="rounded p-1.5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30" title="Undo (⌘Z)">↩</button>
           <button onClick={redo} disabled={!canRedo} className="rounded p-1.5 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30" title="Redo (⇧⌘Z)">↪</button>
+          <button onClick={toggleDarkMode} className="rounded p-1.5 text-white/60 hover:bg-white/10 hover:text-white" title={canvasBackground === '#ffffff' ? 'Pure dark mode' : 'Light mode'}>
+            {canvasBackground === '#ffffff' ? '🌙' : '☀️'}
+          </button>
           <ExportMenu noteId={noteId} title={title} elements={elements} />
         </div>
       </header>
@@ -224,7 +245,7 @@ export default function NoteEditorPage() {
           tool={tool}
           penColor={penColor}
           penWidth={penWidth}
-          background="#ffffff"
+          background={canvasBackground}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
         />

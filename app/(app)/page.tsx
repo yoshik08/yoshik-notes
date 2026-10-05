@@ -22,7 +22,7 @@ function SignInPrompt() {
         <p className="mt-2 text-sm text-neutral-400">Sign in to access your notes.</p>
         <button
           type="button"
-          onClick={() => signIn('google', { callbackUrl: '/' })}
+          onClick={() => signIn('google', { callbackUrl: '/notes' })}
           className="mt-6 w-full rounded-lg bg-[#E9A13B] px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-[#d18f2e]"
         >
           Sign in with Google
