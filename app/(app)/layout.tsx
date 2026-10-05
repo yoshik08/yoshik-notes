@@ -1,16 +1,7 @@
 'use client';
 
-import { SessionProvider, useSession, signIn } from 'next-auth/react';
-import type { ReactNode } from 'react';
-
-// Client auth calls must hit the proxied path in production (/notes/api/auth)
-// and the plain path in local dev (/api/auth).
-function authBasePath(): string {
-  if (typeof window !== 'undefined' && window.location.hostname.endsWith('yoshik.xyz')) {
-    return '/notes/api/auth';
-  }
-  return '/api/auth';
-}
+import { useSession, signIn } from 'next-auth/react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 function GoogleIcon() {
   return (
@@ -37,8 +28,17 @@ function GoogleIcon() {
 
 function AuthGate({ children }: { children: ReactNode }) {
   const { status } = useSession();
+  const [timedOut, setTimedOut] = useState(false);
 
-  if (status === 'loading') {
+  // The spinner must never hang forever: if the session check stalls,
+  // fall through to the sign-in card with a retry option.
+  useEffect(() => {
+    if (status !== 'loading') return;
+    const t = setTimeout(() => setTimedOut(true), 12000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  if (status === 'loading' && !timedOut) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
         <div
@@ -50,13 +50,15 @@ function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  if (status === 'unauthenticated') {
+  if (status === 'unauthenticated' || timedOut) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black px-4">
         <div className="w-full max-w-sm rounded-2xl border border-neutral-800 bg-neutral-950 p-8 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-white">notes</h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Sign in with Google to access your notes.
+            {timedOut
+              ? 'The session check timed out. Check your connection and try again.'
+              : 'Sign in with Google to access your notes.'}
           </p>
           <p className="mt-1 text-xs text-neutral-500">
             ✏️ Made for Apple Pencil
@@ -68,6 +70,14 @@ function AuthGate({ children }: { children: ReactNode }) {
             <GoogleIcon />
             Continue with Google
           </button>
+          {timedOut && (
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-3 w-full rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:border-neutral-600"
+            >
+              Retry
+            </button>
+          )}
         </div>
       </div>
     );
@@ -78,10 +88,8 @@ function AuthGate({ children }: { children: ReactNode }) {
 
 export default function NotesLayout({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider basePath={authBasePath()}>
-      <div className="min-h-screen bg-black text-white antialiased">
-        <AuthGate>{children}</AuthGate>
-      </div>
-    </SessionProvider>
+    <div className="min-h-screen bg-black text-white antialiased">
+      <AuthGate>{children}</AuthGate>
+    </div>
   );
 }
