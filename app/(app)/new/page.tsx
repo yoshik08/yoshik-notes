@@ -1,71 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-import { ApiError, apiJson } from '@/components/dashboard/api';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { routes } from '@/lib/routes';
 
-// POSTs a new note and redirects to its editor. The notes layout already
-// gates unauthenticated users; the 401 branch covers expired sessions.
+// /notes/new makes a note and opens it (also handy as a bookmark or PWA shortcut).
 export default function NewNotePage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    apiJson<{ id: string }>('/api/notes', {
-      method: 'POST',
-      body: JSON.stringify({ title: 'Untitled' }),
-    })
-      .then((data) => {
-        if (alive) router.replace(`/notes/${data.id}`);
-      })
-      .catch((e: unknown) => {
-        if (!alive) return;
-        if (e instanceof ApiError && e.status === 401) {
-          signIn('google', { callbackUrl: '/notes/new' });
-          return;
-        }
-        setError(e instanceof Error ? e.message : 'Failed to create note');
-      });
+    api<{ id: string }>(routes.api.notes(), { method: 'POST', json: { title: 'Untitled' } })
+      .then(({ id }) => alive && router.replace(routes.note(id)))
+      .catch((e: Error) => alive && setError(e.message));
     return () => {
       alive = false;
     };
   }, [router]);
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-4">
-        <div className="w-full max-w-sm rounded-xl border border-[#1a1a1a] bg-black p-8 text-center">
-          <p className="text-sm text-red-400">{error}</p>
-          <div className="mt-6 flex gap-3">
-            <Link
-              href="/notes"
-              className="flex-1 rounded-lg border border-[#1a1a1a] px-4 py-2.5 text-sm font-medium text-white hover:border-[#2e2e2e]"
-            >
+  return (
+    <div className="fixed inset-0 grid place-items-center bg-black px-6 text-center" role={error ? 'alert' : 'status'}>
+      {error ? (
+        <div className="flex max-w-sm flex-col items-center gap-4">
+          <p className="type-title text-[20px] text-white">Couldn’t make a new note</p>
+          <p className="text-[14px] text-text-2">{error}</p>
+          <div className="flex gap-2">
+            <Link href={routes.home()} className="pressable rounded-full px-5 py-2.5 text-[14px] text-white hover:bg-white/10">
               Back to notes
             </Link>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="flex-1 rounded-lg bg-[#E9A13B] px-4 py-2.5 text-sm font-semibold text-black hover:bg-[#d18f2e]"
-            >
-              Retry
+            <button type="button" onClick={() => window.location.reload()} className="pressable rounded-full bg-white px-5 py-2.5 text-[14px] font-semibold text-black">
+              Try again
             </button>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-black">
-      <div
-        className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-800 border-t-[#E9A13B]"
-        role="status"
-        aria-label="Creating note"
-      />
+      ) : (
+        <span className="type-edge text-[12px]">Making a new note…</span>
+      )}
     </div>
   );
 }

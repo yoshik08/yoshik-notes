@@ -306,8 +306,13 @@ export function validateImport(data: unknown): ValidationResult {
     ) {
       return fail('Invalid "canvasSettings"');
     }
+    const pattern = data.canvasSettings.pattern;
+    if (pattern !== undefined && !(isStr(pattern) && ['none', 'dots', 'grid', 'ruled'].includes(pattern))) {
+      return fail('Invalid "canvasSettings"');
+    }
     note.canvasSettings = {
       background: data.canvasSettings.background as (typeof BACKGROUNDS)[number],
+      ...(pattern !== undefined ? { pattern: pattern as 'none' | 'dots' | 'grid' | 'ruled' } : {}),
     };
   }
 

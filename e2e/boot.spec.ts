@@ -22,7 +22,7 @@ async function expectBooted(page: Page) {
   // Styled (stylesheet applied, never a white page) ...
   await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(0, 0, 0)');
   // ... and interactive: the signed-out entry point is rendered by the client app.
-  await expect(page.getByRole('button', { name: /continue with google/i })).toBeVisible({ timeout: 5_000 });
+  await expect(page.getByRole('button', { name: /continue with google/i }).first()).toBeVisible({ timeout: 5_000 });
 }
 
 test('cold load and reload render the app through the /notes proxy', async ({ page }) => {

@@ -1,11 +1,280 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------
+   Tokens, three layers: primitives -> semantic roles -> components.
+   The world: a darkroom contact sheet. Total black ground, frames that
+   are the notes' own pages, one accent (grease-pencil red) used only
+   for marks: selection, the live frame, focus. White is reserved for
+   ink, content, and the single primary action.
+   ------------------------------------------------------------------ */
+
+:root {
+  /* primitives */
+  --black: #000000;
+  --white: #ffffff;
+  --grease: #ff4d3a;
+  --grease-soft: rgb(255 77 58 / 0.14);
+  --alarm: #ff6b81;
+  --paper-light: #ffffff;
+  --paper-dark: #000000;
+  --fog-1: rgb(255 255 255 / 0.04);
+  --fog-2: rgb(255 255 255 / 0.07);
+  --fog-3: rgb(255 255 255 / 0.1);
+  --fog-4: rgb(255 255 255 / 0.14);
+  --fog-5: rgb(255 255 255 / 0.2);
+  --text-1: #ffffff;
+  --text-2: rgb(255 255 255 / 0.64); /* 8.3:1 on black */
+  --text-3: rgb(255 255 255 / 0.48); /* 4.9:1 on black */
+  --surface-raised: #111111; /* opaque: menus and sheets float over white paper too */
+  --surface-sheet: #0b0b0b;
+
+  /* motion: one signature curve, three durations, one entrance ("develop") */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-quick: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 480ms;
+  --dur-develop: 600ms;
+
+  /* semantic roles (shadcn names) */
+  --background: var(--black);
+  --foreground: var(--text-1);
+  --card: var(--surface-sheet);
+  --card-foreground: var(--text-1);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-1);
+  --primary: var(--white);
+  --primary-foreground: var(--black);
+  --secondary: var(--fog-2);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--fog-1);
+  --muted-foreground: var(--text-2);
+  --accent: var(--fog-3);
+  --accent-foreground: var(--text-1);
+  --destructive: var(--alarm);
+  --border: var(--fog-3);
+  --input: var(--fog-4);
+  --ring: var(--grease);
+  --radius: 0.75rem;
+
+  /* component tokens */
+  --dock-bg: rgb(16 16 16 / 0.78);
+  --dock-edge: rgb(255 255 255 / 0.16);
+  --dock-blur: 22px;
+  --rebate: var(--text-3); /* film edge-print */
+  --frame-gap: clamp(14px, 2.2vw, 28px);
+
+  color-scheme: dark;
 }
 
-body {
-  background: #000000;
-  color: #ffffff;
+@theme inline {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), var(--font-geist), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-display);
+  --color-grease: var(--grease);
+  --color-alarm: var(--alarm);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-fog-1: var(--fog-1);
+  --color-fog-2: var(--fog-2);
+  --color-fog-3: var(--fog-3);
+  --color-fog-4: var(--fog-4);
+  --color-raised: var(--surface-raised);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.33);
+  --radius-2xl: calc(var(--radius) * 1.66);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+    background: var(--black);
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    background: var(--black);
+    color: var(--text-1);
+    font-feature-settings: "ss01" 0;
+  }
+  /* Browser surfaces carry the design too. */
+  ::selection {
+    background: var(--grease);
+    color: var(--black);
+  }
+  input,
+  textarea {
+    caret-color: var(--grease);
+  }
+  :focus-visible {
+    outline: 2px solid var(--grease);
+    outline-offset: 2px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--fog-4) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--fog-4);
+    border-radius: 999px;
+    border: 3px solid var(--black);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  a {
+    text-underline-offset: 0.22em;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Display voice: Archivo, wide. Edge print: Archivo, condensed, tabular. */
+  .type-display {
+    font-family: var(--font-display);
+    font-stretch: 120%;
+    font-weight: 620;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  .type-title {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+  }
+  .type-edge {
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    color: var(--rebate);
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Translucent material: only where chrome floats over the page itself. */
+  .material-dock {
+    background: var(--dock-bg);
+    -webkit-backdrop-filter: blur(var(--dock-blur)) saturate(160%);
+    backdrop-filter: blur(var(--dock-blur)) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 var(--dock-edge),
+      0 0 0 1px rgb(255 255 255 / 0.06),
+      0 10px 30px -8px rgb(0 0 0 / 0.55);
+  }
+
+  /* Press feedback for anything pressable. */
+  .pressable {
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      background-color var(--dur-quick) ease,
+      color var(--dur-quick) ease,
+      opacity var(--dur-quick) ease;
+  }
+  .pressable:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  /* The develop entrance: out of black, like a print in the tray. */
+  .develop {
+    animation: develop var(--dur-develop) var(--ease-out) both;
+    animation-delay: calc(min(var(--i, 0), 10) * 40ms);
+  }
+}
+
+@keyframes develop {
+  from {
+    opacity: 0;
+    filter: brightness(0.35) contrast(1.25);
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+/* Keyboard-driven changes are instant: no animation on actions repeated all day. */
+[data-keyboard] .kbd-instant {
+  transition-duration: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .develop {
+    animation: develop-fade 200ms ease both;
+    animation-delay: 0ms;
+  }
+  .pressable:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+@keyframes develop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material-dock {
+    background: #141414;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-2: rgb(255 255 255 / 0.82);
+    --text-3: rgb(255 255 255 / 0.7);
+    --border: rgb(255 255 255 / 0.35);
+  }
 }

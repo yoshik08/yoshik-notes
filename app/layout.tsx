@@ -1,35 +1,38 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Geist } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/components/auth-provider";
+import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Archivo carries the display voice (wide) and the film edge-print (condensed);
+// Geist is the interface face. Both are self-hosted by next/font.
+const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo", display: "swap" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "notes",
-  description: "Premium infinite-canvas notes. Draw, write, and think.",
+  title: { default: "notes", template: "%s · notes" },
+  description: "Handwritten notes on an infinite page, in your browser. Made for Apple Pencil.",
   manifest: "/notes/manifest.json",
-  appleWebApp: {
-    capable: true,
-    title: "notes",
-    statusBarStyle: "black-translucent",
-  },
+  applicationName: "notes",
+  appleWebApp: { capable: true, title: "notes", statusBarStyle: "black-translucent" },
   icons: {
-    icon: "/notes/icon-192.png",
+    icon: [{ url: "/notes/icon.svg", type: "image/svg+xml" }, { url: "/notes/icon-192.png", sizes: "192x192" }],
     apple: "/notes/icon-192.png",
+  },
+  openGraph: {
+    title: "notes",
+    description: "Handwritten notes on an infinite page, in your browser. Made for Apple Pencil.",
+    url: "https://yoshik.xyz/notes",
+    siteName: "notes",
+    type: "website",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  colorScheme: "dark",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
 };
 
 // Runs before (and independently of) the app bundle. If a script or the
@@ -54,14 +57,10 @@ const BOOT_WATCHDOG = `(function(){
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      style={{ background: "#000" }}
-    >
-      <body className="min-h-full flex flex-col bg-black text-white" style={{ background: "#000", color: "#fff" }}>
+    <html lang="en" className={`${archivo.variable} ${geist.variable} h-full antialiased`} style={{ background: "#000" }}>
+      <body className="min-h-full bg-black text-white" style={{ background: "#000", color: "#fff" }}>
         <script dangerouslySetInnerHTML={{ __html: BOOT_WATCHDOG }} />
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

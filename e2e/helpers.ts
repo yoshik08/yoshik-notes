@@ -47,3 +47,18 @@ export async function listNotes(request: APIRequestContext) {
   if (!res.ok()) throw new Error(`list failed ${res.status()}`);
   return ((await res.json()) as { notes: Array<{ id: string; title: string }> }).notes;
 }
+
+/** Drag a stroke across the note canvas with the mouse (canvas-relative points). */
+export async function drawStroke(page: import('@playwright/test').Page, from: [number, number], to: [number, number], steps = 12) {
+  const box = (await page.locator('canvas').first().boundingBox())!;
+  await page.mouse.move(box.x + from[0], box.y + from[1]);
+  await page.mouse.down();
+  for (let i = 1; i <= steps; i++) {
+    await page.mouse.move(box.x + from[0] + ((to[0] - from[0]) * i) / steps, box.y + from[1] + ((to[1] - from[1]) * i) / steps);
+  }
+  await page.mouse.up();
+}
+
+export async function serverElements(request: APIRequestContext, id: string) {
+  return ((await getNote(request, id)).body?.elements ?? []) as Array<Record<string, unknown>>;
+}
