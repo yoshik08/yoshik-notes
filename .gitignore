@@ -48,3 +48,5 @@ next-env.d.ts
 /.claude/skills/
 skills-lock.json
 /e2e/.runtime.json
+/.agents/
+/.impeccable/review/
