@@ -54,3 +54,13 @@ test('direct access without the proxy uses the same /notes URLs', async ({ page 
   expect(seen.failures).toEqual([]);
   expect(seen.consoleErrors).toEqual([]);
 });
+
+test('a failed sign-in comes back to a clear message, shown once', async ({ page }) => {
+  await page.goto('/notes?error=Callback');
+  const message = page.getByRole('alert').filter({ hasText: 'Sign-in didn’t finish' });
+  await expect(message).toHaveText('Sign-in didn’t finish. Try again in a moment.');
+  await expect(page).toHaveURL(/\/notes$/);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /Write by hand/i })).toBeVisible();
+  await expect(message).toHaveCount(0);
+});

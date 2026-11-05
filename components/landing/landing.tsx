@@ -94,7 +94,20 @@ function useStoredInk() {
   );
 }
 
+/**
+ * A failed sign-in comes back here as ?error=<code> (NextAuth). The landing only
+ * renders in the browser (the server always shows the splash), so reading the
+ * URL while initialising state is safe.
+ */
+function readSignInError(): string | null {
+  if (typeof window === 'undefined') return null;
+  const code = new URLSearchParams(window.location.search).get('error');
+  if (!code) return null;
+  return code === 'AccessDenied' ? 'Google didn’t allow that sign-in. Try another account.' : 'Sign-in didn’t finish. Try again in a moment.';
+}
+
 export function Landing({ sessionTimedOut = false }: { sessionTimedOut?: boolean }) {
+  const [signInError] = useState(readSignInError);
   const [examples, setExamples] = useState<Example[]>([]);
   const [hint, setHint] = useState<Array<{ points: Array<{ x: number; y: number; pressure?: number }> }>>();
   const [wroteNow, setWroteNow] = useState(false);
@@ -117,10 +130,23 @@ export function Landing({ sessionTimedOut = false }: { sessionTimedOut?: boolean
     };
   }, []);
 
+  // Shown once: a reload shouldn't repeat an old failure.
+  useEffect(() => {
+    if (!signInError) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('error');
+    window.history.replaceState(window.history.state, '', url);
+  }, [signInError]);
+
   const strip = examples.slice(0, 5);
 
   return (
     <div className="min-h-dvh bg-black text-white">
+      {signInError ? (
+        <p className="type-edge bg-white/[0.06] px-4 py-2 text-center text-[12px] text-white/90" role="alert">
+          {signInError}
+        </p>
+      ) : null}
       {sessionTimedOut ? (
         <p className="type-edge bg-white/[0.06] px-4 py-2 text-center text-[12px]" role="status">
           Couldn’t check whether you’re signed in. You can sign in below.
