@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { toast } from 'sonner';
 import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { CanvasElement } from '@/lib/db/models';
@@ -17,7 +15,7 @@ import { validateImport } from '@/lib/export/importer';
 import { api } from '@/lib/api';
 import { inLayer, isTextField } from '@/lib/keys';
 import { routes } from '@/lib/routes';
-import { frameTransition, prefersReducedMotion, type OpeningFrame } from '@/lib/transition';
+import { frameTransition, type OpeningFrame } from '@/lib/transition';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dock, InkTray } from './dock';
@@ -26,8 +24,6 @@ import { TopBar, type NoteMenuActions } from './top-bar';
 import { useNoteEditor } from './use-note-editor';
 import { VersionsSheet } from './versions-sheet';
 import { ZoomPill } from './zoom-pill';
-
-gsap.registerPlugin(useGSAP);
 
 const CLIP_MARK = 'yoshik-notes/elements@1';
 const TOOL_KEYS: Record<string, Tool> = { v: 'select', p: 'pen', m: 'highlighter', e: 'eraser', h: 'hand', l: 'line', a: 'arrow', r: 'rectangle', o: 'ellipse', t: 'text', i: 'image' };
@@ -75,39 +71,21 @@ export function Editor({ id }: { id: string }) {
   }, [snap.note?.title]);
 
   // ------------------------------------------------------------ the enlarger
-  const overlayRef = useRef<HTMLDivElement>(null);
-  useGSAP(() => {
-    const el = overlayRef.current;
-    if (!opening || !el) return;
-    if (prefersReducedMotion()) {
-      gsap.to(el, { opacity: 0, duration: 0.2, onComplete: () => setEntered(true) });
-      return;
-    }
-    const { rect } = opening;
-    gsap.fromTo(
-      el,
-      { x: rect.x, y: rect.y, scaleX: rect.width / window.innerWidth, scaleY: rect.height / window.innerHeight },
-      { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.46, ease: 'power3.inOut', onComplete: () => setEntered(true) },
-    );
-  });
-  // Once the page is drawn underneath, dissolve the enlarged frame into it.
+  // The library started growing the tapped frame (lib/transition.ts); wait for
+  // it to reach full size, then dissolve it once the page is drawn underneath.
+  useEffect(() => {
+    if (opening) return frameTransition.whenGrown(() => setEntered(true));
+  }, [opening]);
   const dissolved = useRef(false);
   useEffect(() => {
-    const el = overlayRef.current;
-    if (!entered || !el || dissolved.current) return;
+    if (!opening || !entered || dissolved.current) return;
     if (!loaded && snap.load === 'loading') return;
     dissolved.current = true;
-    gsap.to(el, {
-      opacity: 0,
-      filter: 'blur(6px)',
-      duration: 0.24,
-      ease: 'power1.out',
-      onComplete: () => {
-        const saved = takeSavedView();
-        if (saved) engine.glideTo(saved);
-      },
+    frameTransition.dissolve(() => {
+      const saved = takeSavedView();
+      if (saved) engine.glideTo(saved);
     });
-  }, [engine, entered, loaded, snap.load, takeSavedView]);
+  }, [engine, entered, loaded, opening, snap.load, takeSavedView]);
 
   // ------------------------------------------------------------ actions
   const goBack = useCallback(async () => {
@@ -429,18 +407,6 @@ export function Editor({ id }: { id: string }) {
             Restore
           </Button>
         </Notice>
-      ) : null}
-
-      {opening ? (
-        <div
-          ref={overlayRef}
-          aria-hidden="true"
-          className="pointer-events-none fixed left-0 top-0 z-50 h-dvh w-screen origin-top-left overflow-hidden"
-          style={{ background: opening.paper === '#000000' ? '#000' : '#fff' }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- same image the frame showed */}
-          {opening.image ? <img src={opening.image} alt="" className="size-full object-contain" /> : null}
-        </div>
       ) : null}
 
       <input
