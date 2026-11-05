@@ -1,16 +1,11 @@
-// Shared API helpers for the notes dashboard.
-// The app is served at /notes in production (proxy rewrite) and at / in dev,
-// so API paths get a /notes prefix only on the production host.
+// Shared API helpers. The app is always addressed under /notes: via
+// yoshik-proxy in production, and via the /notes rewrite in next.config.ts
+// everywhere else, so there is one URL scheme and no host sniffing.
 
-export function apiBase(): string {
-  if (typeof window !== 'undefined' && window.location.hostname.endsWith('yoshik.xyz')) {
-    return '/notes';
-  }
-  return '';
-}
+export const BASE_PATH = '/notes';
 
 export function apiUrl(path: string): string {
-  return `${apiBase()}${path}`;
+  return `${BASE_PATH}${path}`;
 }
 
 export class ApiError extends Error {
@@ -24,10 +19,18 @@ export class ApiError extends Error {
 
 /** fetch + JSON parse with typed result. Throws ApiError (401 on unauthenticated). */
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(apiUrl(path), {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  });
+  let res: Response;
+  try {
+    res = await fetch(apiUrl(path), {
+      // A stalled network must end in an error state, never an endless spinner.
+      signal: AbortSignal.timeout(15_000),
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    });
+  } catch (e) {
+    const timedOut = e instanceof DOMException && e.name === 'TimeoutError';
+    throw new ApiError(0, timedOut ? 'The server took too long to respond' : 'Network error — check your connection');
+  }
   if (res.status === 401) throw new ApiError(401, 'Unauthorized');
   if (!res.ok) {
     let message = `Request failed (${res.status})`;

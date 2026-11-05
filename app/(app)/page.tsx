@@ -110,7 +110,7 @@ export default function NotesDashboard() {
         <h1 className="text-2xl font-semibold tracking-tight text-white">Notes</h1>
         <button
           type="button"
-          onClick={() => router.push('/new')}
+          onClick={() => router.push('/notes/new')}
           className="rounded-lg bg-[#E9A13B] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-[#d18f2e] sm:w-auto"
         >
           + New note
@@ -160,7 +160,7 @@ export default function NotesDashboard() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => router.push('/new')}
+                  onClick={() => router.push('/notes/new')}
                   className="mt-6 rounded-lg bg-[#E9A13B] px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-[#d18f2e]"
                 >
                   + New note

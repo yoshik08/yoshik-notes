@@ -8,7 +8,8 @@ export async function getDb(): Promise<Db> {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI is not set');
   if (!client) {
-    client = new MongoClient(uri);
+    // Fail in seconds, not the driver's default 30s, so the UI shows an error instead of hanging.
+    client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
     await client.connect();
   }
   db = client.db('notes');

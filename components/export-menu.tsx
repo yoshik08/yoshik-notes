@@ -101,7 +101,7 @@ export function ExportMenu({ title, elements }: ExportMenuProps) {
       if (!res.ok || !res.note) throw new Error(res.error ?? 'Invalid note file');
 
       // Create a new note, then fill it with the imported content
-      const createRes = await fetch('/api/notes', {
+      const createRes = await fetch(apiUrl('/api/notes'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: `${res.note.title} (imported)` }),
@@ -123,7 +123,7 @@ export function ExportMenu({ title, elements }: ExportMenuProps) {
       if (!patchRes.ok) throw new Error('Failed to save imported content');
 
       ok(`Imported ${res.note.elements.length} elements`);
-      router.push(`/${created.id}`);
+      router.push(`/notes/${created.id}`);
     } catch (e) {
       err(e instanceof Error ? e.message : 'Import failed');
     } finally {

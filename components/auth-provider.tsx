@@ -1,18 +1,16 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { BASE_PATH } from '@/components/dashboard/api';
 
-// Client auth calls must hit the proxied path in production (/notes/api/auth)
-// and the plain path in local dev (/api/auth). This is the single
-// SessionProvider for the app — do not nest another one below it.
-function authBasePath(): string {
-  if (typeof window !== 'undefined' && window.location.hostname.endsWith('yoshik.xyz')) {
-    return '/notes/api/auth';
-  }
-  return '/api/auth';
-}
-
+// The single SessionProvider for the app — do not nest another one below it.
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <SessionProvider basePath={authBasePath()}>{children}</SessionProvider>;
+  useEffect(() => {
+    // The client app is running: cancel the boot watchdog in app/layout.tsx.
+    document.documentElement.dataset.booted = '1';
+    document.getElementById('boot-fail')?.remove();
+  }, []);
+
+  return <SessionProvider basePath={`${BASE_PATH}/api/auth`}>{children}</SessionProvider>;
 }

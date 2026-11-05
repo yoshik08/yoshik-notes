@@ -101,7 +101,7 @@ export default function NoteCard({ note, onRenamed, onDuplicated, onDeleted }: N
   const openNote = (e: React.MouseEvent) => {
     // Let real links/buttons/inputs handle themselves; card body opens the note.
     if ((e.target as HTMLElement).closest('button, input, a')) return;
-    router.push(`/${note.id}`);
+    router.push(`/notes/${note.id}`);
   };
 
   return (
@@ -129,7 +129,7 @@ export default function NoteCard({ note, onRenamed, onDuplicated, onDeleted }: N
           />
         ) : (
           <Link
-            href={`/${note.id}`}
+            href={`/notes/${note.id}`}
             onClick={(e) => e.stopPropagation()}
             className="min-w-0 flex-1 truncate text-base font-medium text-white hover:underline"
             title={displayTitle}
