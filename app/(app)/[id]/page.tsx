@@ -95,10 +95,14 @@ export default function NoteEditorPage() {
 
   const { execute, undo, redo, canUndo, canRedo } = useHistory(elements, handleElementsChange);
 
+  // Timers and page-hide handlers outlive renders; they must call the latest save, not the
+  // first render's (where note is still null and save silently does nothing).
+  const saveRef = useRef<() => Promise<void>>(async () => {});
+
   const markDirty = useCallback(() => {
     setSaveState('saving');
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => save(), 800);
+    saveTimer.current = setTimeout(() => void saveRef.current(), 800);
   }, []);
 
   const toggleDarkMode = useCallback(() => {
@@ -145,17 +149,24 @@ export default function NoteEditorPage() {
       await savePending({ noteId, elements: els, title, baseRevision: revisionRef.current, updatedAt: Date.now() }).catch(() => {});
     }
   }, [note, noteId, title]);
+  saveRef.current = save;
 
-  // Save on page hide
+  // Flush a pending save when the page is hidden or unloaded.
   useEffect(() => {
-    const onHide = () => { if (saveTimer.current) { clearTimeout(saveTimer.current); save(); } };
-    document.addEventListener('visibilitychange', () => { if (document.hidden) onHide(); });
-    window.addEventListener('beforeunload', onHide);
-    return () => {
-      document.removeEventListener('visibilitychange', onHide);
-      window.removeEventListener('beforeunload', onHide);
+    const flush = () => {
+      if (!saveTimer.current) return;
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      void saveRef.current();
     };
-  }, [save]);
+    const onVisibility = () => { if (document.hidden) flush(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('beforeunload', flush);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('beforeunload', flush);
+    };
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
