@@ -159,8 +159,9 @@ export function Landing({ sessionTimedOut = false }: { sessionTimedOut?: boolean
             </figcaption>
           </figure>
 
-          <div className="develop order-1 md:order-2" style={{ ['--i' as string]: 7 }}>
-            <h1 className="type-display text-[clamp(40px,4.3vw,72px)] text-white">
+          {/* The column is a container: from md up, each sentence stays on one line and is sized to fit it (iPad portrait). */}
+          <div className="develop @container order-1 md:order-2" style={{ ['--i' as string]: 7 }}>
+            <h1 className="type-display text-[clamp(40px,4.3vw,72px)] text-white md:text-[length:min(clamp(40px,4.3vw,72px),10.4cqi)]">
               <span className="block md:whitespace-nowrap">Write by hand.</span>
               <span className="block md:whitespace-nowrap">Keep every page.</span>
             </h1>
