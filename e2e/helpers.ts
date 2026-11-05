@@ -16,7 +16,7 @@ export async function signIn(context: BrowserContext, user: { googleId: string; 
     },
   });
   await context.addCookies([
-    { name: SESSION_COOKIE, value, domain: 'localhost', path: '/', httpOnly: true, secure: true, sameSite: 'Lax' },
+    { name: SESSION_COOKIE, value, domain: 'localhost', path: '/', httpOnly: true, secure: false, sameSite: 'Lax' },
   ]);
 }
 

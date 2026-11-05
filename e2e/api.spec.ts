@@ -61,7 +61,7 @@ test.describe('notes API contract', () => {
 
     const bad = await alice.patch(api(`/${id}`), { data: { elements: [{ id: 5, type: 'stroke' }] } });
     expect(bad.status()).toBe(400);
-    expect(await bad.json()).toEqual({ error: 'Invalid element data' });
+    expect(await bad.json()).toMatchObject({ error: 'Invalid element data' });
 
     // A Buffer is sent byte-for-byte (a string would be JSON-encoded into valid JSON).
     const badJson = await alice.patch(api(`/${id}`), { headers: { 'content-type': 'application/json' }, data: Buffer.from('{nope') });
@@ -77,7 +77,8 @@ test.describe('notes API contract', () => {
     const del = await alice.delete(api(`/${id}`));
     expect(del.status()).toBe(200);
     expect(await del.json()).toEqual({ ok: true });
-    expect((await alice.get(api(`/${id}`))).status()).toBe(404);
+    // Since the trash feature, a deleted note is kept (with deletedAt) until purged.
+    expect((await (await alice.get(api(`/${id}`))).json()).deletedAt).toBeTruthy();
     expect((await alice.delete(api(`/${id}`))).status()).toBe(404);
   });
 

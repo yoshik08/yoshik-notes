@@ -10,17 +10,6 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: { strategy: 'jwt' },
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
-  },
   callbacks: {
     async signIn({ user }) {
       // Upsert user in MongoDB

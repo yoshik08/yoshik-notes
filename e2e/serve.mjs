@@ -4,10 +4,13 @@
 import { spawn } from 'node:child_process';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { startProxy } from './proxy.mjs';
-import { APP_PORT, PROXY_PORT, E2E_SECRET } from './env.mjs';
+import fs from 'node:fs';
+import { APP_PORT, PROXY_PORT, E2E_SECRET, RUNTIME_FILE } from './env.mjs';
 
 const mongo = process.env.E2E_MONGODB_URI ? null : await MongoMemoryServer.create();
 const mongoUri = process.env.E2E_MONGODB_URI ?? mongo.getUri();
+// Tests read this to seed raw (legacy-shaped) documents straight into the database.
+fs.writeFileSync(RUNTIME_FILE, JSON.stringify({ mongoUri }));
 
 const app = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '-p', String(APP_PORT)], {
   stdio: 'inherit',

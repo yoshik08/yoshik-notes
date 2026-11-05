@@ -47,3 +47,4 @@ next-env.d.ts
 # agent skills (local tooling, not app code)
 /.claude/skills/
 skills-lock.json
+/e2e/.runtime.json

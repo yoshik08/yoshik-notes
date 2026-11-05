@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import type { Binary, ObjectId } from 'mongodb';
 
 // ============ Users ============
 
@@ -104,8 +104,13 @@ export type CanvasElement =
 
 // ============ Notes ============
 
+export type PagePattern = 'dots' | 'grid' | 'ruled';
+
 export interface CanvasSettings {
-  background: '#ffffff' | '#000000' | 'grid' | 'dots' | 'ruled';
+  /** Paper colour. Legacy notes may hold a pattern name here, which means white paper with that pattern. */
+  background: '#ffffff' | '#000000' | PagePattern;
+  /** Added 2026-11: pattern drawn on the paper (optional, additive). */
+  pattern?: PagePattern | 'none';
 }
 
 export interface AppState {
@@ -124,6 +129,27 @@ export interface NoteDoc {
   revision: number;
   createdAt: Date;
   updatedAt: Date;
+  // Additive fields (2026-11). Older documents simply lack them.
+  /** Set when the note is in Recently deleted. */
+  deletedAt?: Date | null;
+  /** Small raster preview rendered by the client with the canvas renderer. */
+  thumb?: Binary | Uint8Array;
+  thumbType?: string;
+  thumbAt?: Date;
+}
+
+/** A saved earlier state of a note (version history / safety net). */
+export interface NoteVersionDoc {
+  _id?: ObjectId;
+  noteId: ObjectId;
+  ownerId: string;
+  revision: number;
+  title: string;
+  elements: CanvasElement[];
+  canvasSettings: CanvasSettings;
+  createdAt: Date;
+  /** 'original' is the first snapshot of a note and is kept until the note is purged. */
+  reason: 'original' | 'autosave' | 'restore';
 }
 
 export function newNote(ownerId: string, title = 'Untitled'): Omit<NoteDoc, '_id'> {

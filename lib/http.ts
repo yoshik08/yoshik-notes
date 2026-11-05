@@ -9,9 +9,12 @@ export class HttpError extends Error {
 
 type Handler<P> = (owner: string, req: Request, params: P) => Promise<Response>;
 
+const DB_DOWN = /MongoServerSelectionError|MongoNetworkError|MongoNetworkTimeoutError|MONGODB_URI/;
+
 /**
  * Route handler for signed-in users only: 401 without a session, HttpError
- * mapped to its JSON response. The owner id always comes from the session.
+ * mapped to its JSON response, anything else to a JSON 5xx (never HTML).
+ * The owner id always comes from the session.
  */
 export function withOwner<P = Record<string, never>>(handler: Handler<P>) {
   return async (req: Request, ctx: { params: Promise<P> }): Promise<Response> => {
@@ -25,7 +28,12 @@ export function withOwner<P = Record<string, never>>(handler: Handler<P>) {
       return await handler(owner, req, await ctx.params);
     } catch (e) {
       if (e instanceof HttpError) return Response.json(e.body, { status: e.status });
-      throw e;
+      const name = e instanceof Error ? `${e.name} ${e.message}` : String(e);
+      console.error('[notes api]', req.method, new URL(req.url).pathname, e);
+      if (DB_DOWN.test(name)) {
+        return Response.json({ error: 'The notes database is unreachable right now. Try again in a moment.' }, { status: 503 });
+      }
+      return Response.json({ error: 'Something went wrong on the server.' }, { status: 500 });
     }
   };
 }
