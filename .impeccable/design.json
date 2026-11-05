@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-05T12:00:00.000Z",
+  "title": "Design System: notes",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Total Black", "canonical": "#000000", "tonalRamp": ["#000000", "#0b0b0b", "#111111", "#1a1a1a", "#262626", "#3a3a3a", "#5c5c5c", "#8a8a8a"] },
+      "ink-white": { "role": "neutral", "displayName": "Ink White", "canonical": "#ffffff", "tonalRamp": ["#5c5c5c", "#7a7a7a", "#9a9a9a", "#b8b8b8", "#d0d0d0", "#e4e4e4", "#f2f2f2", "#ffffff"] },
+      "grease": { "role": "primary", "displayName": "Grease Pencil", "canonical": "#ff4d3a", "tonalRamp": ["#3d0d08", "#6b1810", "#a12619", "#d43524", "#ff4d3a", "#ff7a6b", "#ffa89d", "#ffd6d0"] },
+      "alarm": { "role": "tertiary", "displayName": "Alarm", "canonical": "#ff6b81", "tonalRamp": ["#3d0f17", "#6e1b2a", "#a3283f", "#d63d58", "#ff6b81", "#ff8fa0", "#ffb5c0", "#ffdbe0"] },
+      "surface-raised": { "role": "neutral", "displayName": "Raised Surface", "canonical": "#111111" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing headlines, one sentence per line. Archivo width 120." },
+      "title": { "displayName": "Title", "purpose": "Note titles and page titles. Archivo width 112." },
+      "edge": { "displayName": "Edge print", "purpose": "Frame numbers, dates, counts. Archivo width 75, tabular." },
+      "body": { "displayName": "Body", "purpose": "Interface and copy. Geist." }
+    },
+    "shadows": [
+      { "name": "dock", "value": "inset 0 1px 0 rgba(255,255,255,0.16), 0 0 0 1px rgba(255,255,255,0.06), 0 10px 30px -8px rgba(0,0,0,0.55)", "purpose": "Floating material over a page: light top edge plus one soft offset shadow." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Signature curve for entrances and responses." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "On-screen movement." },
+      { "name": "quick", "value": "160ms", "purpose": "Press feedback, small state changes." },
+      { "name": "base", "value": "240ms", "purpose": "Menus, trays, overlays." },
+      { "name": "develop", "value": "600ms, stagger 40ms (max 10)", "purpose": "Frames emerging from black on first load." },
+      { "name": "enlarger", "value": "460ms power3.inOut, dissolve 240ms with blur", "purpose": "A frame growing into its page; the reverse on return." },
+      { "name": "grease-draw", "value": "360ms outCubic", "purpose": "The mark drawing itself around a pick." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one white action on a screen.",
+      "html": "<button class=\"ds-btn-primary\">New note</button>",
+      "css": ".ds-btn-primary { background: #fff; color: #000; height: 40px; padding: 0 20px; border: 0; border-radius: 999px; font: 600 14px Geist, system-ui, sans-serif; transition: transform 160ms cubic-bezier(0.23,1,0.32,1), background-color 160ms ease; } .ds-btn-primary:hover { background: rgba(255,255,255,0.9); } .ds-btn-primary:active { transform: scale(0.96); } .ds-btn-primary:focus-visible { outline: 2px solid #ff4d3a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Every secondary action.",
+      "html": "<button class=\"ds-btn-ghost\">Select</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #fff; height: 40px; padding: 0 16px; border: 0; border-radius: 999px; font: 500 14px Geist, system-ui, sans-serif; transition: background-color 160ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-ghost:hover { background: rgba(255,255,255,0.1); } .ds-btn-ghost:active { transform: scale(0.96); } .ds-btn-ghost:focus-visible { outline: 2px solid #ff4d3a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "description": "Library search; matches titles and typed text.",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\"><path fill=\"currentColor\" d=\"M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32ZM40 112a72 72 0 1 1 72 72 72.08 72.08 0 0 1-72-72Z\"/></svg><input placeholder=\"Search notes and typed text\"></label>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 8px; height: 40px; width: 280px; padding: 0 14px; border-radius: 999px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); } .ds-search input { flex: 1; background: transparent; border: 0; outline: none; color: #fff; font: 400 14px Geist, system-ui, sans-serif; caret-color: #ff4d3a; } .ds-search input::placeholder { color: rgba(255,255,255,0.48); } .ds-search:focus-within { background: rgba(255,255,255,0.11); }"
+    },
+    {
+      "name": "Sort Control",
+      "kind": "nav",
+      "description": "Segmented control; the selected option is lifted fog, never solid white.",
+      "html": "<div class=\"ds-seg\"><button aria-pressed=\"true\">Recent</button><button>Created</button><button>A–Z</button></div>",
+      "css": ".ds-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.07); } .ds-seg button { height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: rgba(255,255,255,0.7); font: 500 13px Geist, system-ui, sans-serif; } .ds-seg button[aria-pressed=true] { background: rgba(255,255,255,0.17); color: #fff; } .ds-seg button:focus-visible { outline: 2px solid #ff4d3a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Frame",
+      "kind": "card",
+      "refersTo": "frame",
+      "description": "A note as its own rendered page, with title and edge print.",
+      "html": "<figure class=\"ds-frame\"><div class=\"ds-frame-page\"></div><figcaption><span class=\"ds-frame-title\">Lecture 4: Fourier series</span><span class=\"ds-frame-edge\">12 &#9656; 5 Nov 128 marks</span></figcaption></figure>",
+      "css": ".ds-frame { margin: 0; width: 240px; } .ds-frame-page { aspect-ratio: 3 / 2; border-radius: 3px; background: #fff; } .ds-frame figcaption { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; } .ds-frame-title { color: #fff; font: 600 15px Archivo, sans-serif; font-stretch: 112%; letter-spacing: -0.015em; } .ds-frame-edge { color: rgba(255,255,255,0.48); font: 500 11.5px Archivo, sans-serif; font-stretch: 75%; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "Dock",
+      "kind": "custom",
+      "refersTo": "dock",
+      "description": "Editor tool bar: translucent material over the page; active tool on lifted fog.",
+      "html": "<div class=\"ds-dock\"><button class=\"is-active\" aria-label=\"Pen\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 256 256\"><circle cx=\"128\" cy=\"128\" r=\"40\" fill=\"currentColor\"/></svg></button><button aria-label=\"Eraser\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 256 256\"><rect x=\"68\" y=\"68\" width=\"120\" height=\"120\" rx=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\"/></svg></button></div>",
+      "css": ".ds-dock { display: inline-flex; gap: 2px; padding: 6px; border-radius: 999px; background: rgba(16,16,16,0.78); backdrop-filter: blur(22px) saturate(160%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 0 0 1px rgba(255,255,255,0.06), 0 10px 30px -8px rgba(0,0,0,0.55); } .ds-dock button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 999px; background: transparent; color: rgba(255,255,255,0.72); transition: transform 160ms cubic-bezier(0.23,1,0.32,1); } .ds-dock button:hover { background: rgba(255,255,255,0.1); color: #fff; } .ds-dock button.is-active { background: rgba(255,255,255,0.17); color: #fff; } .ds-dock button:active { transform: scale(0.96); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The contact sheet",
+    "overview": "notes looks like a darkroom contact sheet: a total-black sheet holding frames, and every frame is one of your pages exactly as it renders, white paper or black. The ink is the content and the only thing allowed to be loud. Chrome is quiet, translucent where it floats over a page, and set in a type system borrowed from film packaging and edge print. Picking something is a red grease-pencil loop drawn around it, the way photographers circle keepers on a contact sheet. Opening a note is the enlarger: its frame grows into the page. These two moves, plus frames developing out of black on first load, are the whole motion language.",
+    "keyCharacteristics": [
+      "True black ground, never a tinted near-black.",
+      "Frames are real renders of notes at 3:2 (35mm), with tabular edge-print numerals in shooting order.",
+      "One accent, grease-pencil red, used only for marks: selection, the live frame, focus.",
+      "White only for ink, content, and the single primary action.",
+      "Translucent material only where chrome floats over a page (the editor dock and bars)."
+    ],
+    "rules": [
+      { "name": "The White Is Earned Rule", "body": "A white fill marks the one primary action on a screen (New note, Continue with Google). Selected states use a lifted fog (white 17%), never solid white.", "section": "colors" },
+      { "name": "The Ink Adapts Rule", "body": "Black and white ink adapt to the paper at render time (black writes white on dark paper). Stored colours never change.", "section": "colors" },
+      { "name": "The Edge Print Rule", "body": "Metadata lives under its frame in edge print: number, film-edge arrow, date, count. No labels above headings, no middle-dot strings.", "section": "typography" },
+      { "name": "The Float Only Over Paper Rule", "body": "Translucency appears only where chrome sits over a page. The library header and sheets over black use solid or near-solid surfaces.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the ground #000000 everywhere.",
+      "Do show notes as their real rendered pages; never a placeholder icon for content.",
+      "Do use grease red only for marks: selection, the live frame, focus.",
+      "Do keep keyboard-driven changes instant, and UI motion under 300ms (page transitions excepted).",
+      "Do honour reduced motion: develop becomes a short fade, glides become cuts."
+    ],
+    "donts": [
+      "Don't fill selected states with solid white; that is reserved for the primary action.",
+      "Don't add eyebrow labels, middle-dot meta strings, or emoji icons.",
+      "Don't add drop-shadow glows to buttons or decorative gradients.",
+      "Don't imitate materials (paper grain, film sprockets) in CSS; the frames are the material."
+    ]
+  }
+}
