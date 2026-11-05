@@ -1,50 +1,16 @@
-import { getDb } from '@/lib/db/mongo';
-import { newNote, type NoteDoc } from '@/lib/db/models';
-import { requireAuth, unauthorized } from '@/lib/auth/require-auth';
-import { ObjectId } from 'mongodb';
+import { withOwner } from '@/lib/http';
+import { createNote, listNotes } from '@/lib/notes/store';
 
-// GET /api/notes — list user's notes (id, title, updatedAt, revision)
-export async function GET() {
-  let googleId: string;
-  try {
-    googleId = await requireAuth();
-  } catch {
-    return unauthorized();
-  }
-  const db = await getDb();
-  const notes = await db
-    .collection<NoteDoc>('notes')
-    .find({ ownerId: googleId })
-    .project({ elements: 0, appState: 0 })
-    .sort({ updatedAt: -1 })
-    .toArray();
-  return Response.json({
-    notes: notes.map((n) => ({
-      id: n._id!.toString(),
-      title: n.title,
-      updatedAt: n.updatedAt,
-      createdAt: n.createdAt,
-      revision: n.revision,
-    })),
-  });
-}
+// GET /api/notes — the owner's notes (summaries, newest edit first)
+export const GET = withOwner(async (owner) => Response.json({ notes: await listNotes(owner) }));
 
-// POST /api/notes — create a new note
-export async function POST(req: Request) {
-  let googleId: string;
+// POST /api/notes — create a note; body { title? } is optional
+export const POST = withOwner(async (owner, req) => {
+  let title: unknown;
   try {
-    googleId = await requireAuth();
+    title = ((await req.json()) as { title?: unknown }).title;
   } catch {
-    return unauthorized();
+    /* no body = default title */
   }
-  let title = 'Untitled';
-  try {
-    const body = await req.json();
-    if (typeof body.title === 'string' && body.title.trim()) {
-      title = body.title.trim().slice(0, 200);
-    }
-  } catch { /* no body = default title */ }
-  const db = await getDb();
-  const result = await db.collection<NoteDoc>('notes').insertOne(newNote(googleId, title));
-  return Response.json({ id: result.insertedId.toString(), title }, { status: 201 });
-}
+  return Response.json(await createNote(owner, title), { status: 201 });
+});
