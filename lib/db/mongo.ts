@@ -1,19 +1,28 @@
 import { MongoClient, Db } from 'mongodb';
 
-let client: MongoClient | null = null;
-let db: Db | null = null;
+// One client per server instance. The connect attempt itself is shared, so
+// requests arriving together use one connection. If it fails, it is forgotten:
+// a client whose first connect failed stays closed for good ("Topology is
+// closed"), so the next request must start a fresh one, or one bad moment
+// would break this instance until it is recycled.
+let connecting: Promise<Db> | null = null;
 
-export async function getDb(): Promise<Db> {
-  if (db) return db;
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error('MONGODB_URI is not set');
-  if (!client) {
+export function getDb(): Promise<Db> {
+  if (!connecting) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) return Promise.reject(new Error('MONGODB_URI is not set'));
     // Fail in seconds, not the driver's default 30s, so the UI shows an error instead of hanging.
-    client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
-    await client.connect();
+    const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+    connecting = client.connect().then(
+      () => client.db('notes'),
+      (e) => {
+        connecting = null;
+        void client.close().catch(() => {});
+        throw e;
+      },
+    );
   }
-  db = client.db('notes');
-  return db;
+  return connecting;
 }
 
 export async function ensureIndexes() {

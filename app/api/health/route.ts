@@ -8,7 +8,9 @@ export async function GET(req: Request) {
   try {
     await (await getDb()).command({ ping: 1 });
     return Response.json({ ok: true, ts, db: 'up', ms: Date.now() - started });
-  } catch {
+  } catch (e) {
+    // The reason goes to the server log only; the public answer stays generic.
+    console.error('[notes] database ping failed', e);
     return Response.json({ ok: false, ts, db: 'down', ms: Date.now() - started }, { status: 503 });
   }
 }
